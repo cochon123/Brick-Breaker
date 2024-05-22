@@ -16,11 +16,32 @@ let canonX = 300;                                               //position de la
 let canonY = 550;                                               //position de la base du canon en y
 let canonLength = 50;                                           //taille du canon
 let angle = 0;                                                  //angle de départ
+var audioContext = new (window.AudioContext || window.webkitAudioContext)();// Créer un contexte audio
 var T = [ [],[],[],[],[],[],[],[],[] ];                         //contient les coordonées de chaque rectangle.
 var Tcoli = [ [],[],[],[],[],[],[],[],[] ];                     //contient les coordonées de chaque rectangle.
 
 
 //déclarer les fonctions
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+//gérer le son
+function jouerSon() {
+    // Créer une source d'oscillateur
+    var oscillateur = audioContext.createOscillator();
+    oscillateur.type = 'square'; // Type d'onde sonore
+    oscillateur.frequency.setValueAtTime(440, audioContext.currentTime); // Fréquence en hertz (La note "A")
+
+    // Créer un gain pour contrôler le volume
+    var gainNode = audioContext.createGain();
+    gainNode.gain.setValueAtTime(0.1, audioContext.currentTime); // Volume
+
+    // Connecter l'oscillateur au gain, puis au contexte audio
+    oscillateur.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+
+    // Démarrer l'oscillateur et l'arrêter après un court instant
+    oscillateur.start();
+    oscillateur.stop(audioContext.currentTime + 0.1); // Jouer le son pour 100 millisecondes
+}
 
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -100,7 +121,7 @@ function ajouter_lign(){                                        //faire décsend
     if(T[8] != 0){
         gamover = true;
         alert("Game over");
-        document.write("<center><h1>SCORE : "+niveau+"<h1></center>")
+        document.write("<center><h1>SCORE : "+niveau+"<h1></center>");
     }
 
     for ( i = T.length-1 ; i > 0 ; i-- ){
@@ -131,11 +152,13 @@ function detecterCollisionAvecParois(balle) {
     if (balle.x - balle.radius < 0 || balle.x + balle.radius > canvas.width) {
         // La balle a touché la paroi gauche ou droite
         balle.dx *= -1; // Inverser la composante horizontale de la vitesse
+        jouerSon()
     }
     if (balle.y - balle.radius < 0) {
 
         // La balle a touché la paroi supérieure
         balle.dy *= -1; // Inverser la composante verticale de la vitesse
+        jouerSon();
     }
 }
 
@@ -185,7 +208,6 @@ function creerBalle() {
         x: canonX,
         y: canonY,
         radius: 5,                                              // Rayon de la balle
-        speed: 5,                                               // Vitesse de la balle
         dx: Math.cos(angle_balle - Math.PI / 2) * 5,                  // Vitesse en x
         dy: Math.sin(angle_balle - Math.PI / 2) * 5                   // Vitesse en y
     };
@@ -210,6 +232,7 @@ function updateBalles() {
         for(lign = 0; lign < Tcoli.length; lign++){
             for(col = 0; col < Tcoli[lign].length; col++){
                 if (detecterCollision(balle, Tcoli[lign][col])) {
+                    jouerSon();
                     calculerRebond(balle, Tcoli[lign][col])
                     T[lign][col].niv--;
                     modif_block(lign, col);
@@ -259,7 +282,8 @@ canvas.addEventListener('click', function() {
 function calculerRebond(balle, rect) {
     // Déterminer le côté du rectangle touché
     let coteTouche;
-    if (balle.y - balle.radius <= rect.y || balle.y + balle.radius >= rect.y + rect.height) {
+    let i = 5;
+    if (balle.y - balle.radius + i<= rect.y || balle.y + balle.radius - i >= rect.y + rect.height) {
         // La balle a touché le haut ou le bas du rectangle
         coteTouche = 'vertical';
     } else {
