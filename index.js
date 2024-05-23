@@ -23,8 +23,8 @@ var Tcoli = [ [],[],[],[],[],[],[],[],[] ];                     //contient les c
 
 //déclarer les fonctions
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
-//gérer le son
-function jouerSon() {
+
+function jouerSon() {                                             //gérer le son
     // Créer une source d'oscillateur
     var oscillateur = audioContext.createOscillator();
     oscillateur.type = 'square'; // Type d'onde sonore
@@ -54,17 +54,16 @@ function creer_rect(x, y, width, height, niv){                       //pour cré
 
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
 
-
 function creer_tab(nbrRectangles, ligne){                       //créer un tableau T avec nbrrectangles case. chaque case contenant un nombre compris entre 1 et nbrRectangles.
     T[ligne] = [];
     for (let i = 0; i < nbrRectangles; i++) {
 
         colone = Math.round(Math.random() * 8);
-
-        if ( T[ligne].indexOf({colone: colone}) == -1 ){
-    
+        function Recherche(objet) {
+            return objet.colone == colone;
+        }
+        if ( T[ligne].findIndex(Recherche) == -1 ){
             T[ligne][i] = {colone: colone, niv: niveau};
-            
         }else{
             i-- ;
         }
@@ -286,7 +285,7 @@ function calculerRebond(balle, rect) {
     if (balle.y - balle.radius + i<= rect.y || balle.y + balle.radius - i >= rect.y + rect.height) {
         // La balle a touché le haut ou le bas du rectangle
         coteTouche = 'vertical';
-    } else {
+    } else if(balle.y + balle.radius-i >= rect.y ||+  balle.y - balle.radius+i <= rect.y + rect.height){
         // La balle a touché les côtés gauche ou droit du rectangle
         coteTouche = 'horizontal';
     }
